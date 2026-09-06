@@ -32,6 +32,24 @@ const userSchema = new Schema({
         type: String,
         required: [true, "Aadhar Number is required"],
         unique: true,
+    },
+    
+    password: {
+        type: String,
+        required: [true, 'Passowrd is required'],
+        minlength: [3, 'Atleast 3 character is required'],
+        maxlength: [16, 'max 20 character is allowed']
+    },
+
+    role: {
+        type: String,
+        enum: ['voter', 'admin'],
+        default: 'voter'
+    },
+
+    isVoted: {
+        type: Boolean,
+        default: false
     }
 })
 
