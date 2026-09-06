@@ -11,7 +11,7 @@ app.get('/', (req, res) => {
 })
 
 
- connectDB();
+connectDB();
 
 app.listen(port, () => {
    
