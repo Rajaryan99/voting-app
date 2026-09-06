@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import bcrypt from 'bcrypt'
 
 const userSchema = new Schema({
     name: {
@@ -23,7 +24,7 @@ const userSchema = new Schema({
         required: [true, "Address is required"]
     },
 
-    PhoneNumber:{
+    phoneNumber:{
         type: String,
         required: [true, "Phone number is required"],
     },
@@ -33,7 +34,7 @@ const userSchema = new Schema({
         required: [true, "Aadhar Number is required"],
         unique: true,
     },
-    
+
     password: {
         type: String,
         required: [true, 'Passowrd is required'],
@@ -52,5 +53,29 @@ const userSchema = new Schema({
         default: false
     }
 })
+
+userSchema.pre('save', async function (next){
+
+    //only hash if password is new or chnaged
+
+    if(!this.isModified('password')){
+        return;
+    }
+
+    try {
+
+        const salt = await bcrypt.genSalt(10)
+        this.password  = await bcrypt.hash(this.password, salt)
+        // next()
+        
+    } catch (error) {
+        next(error)
+        
+    }
+})
+
+userSchema.method.isMatchPassword = async function(userPassword){
+    return await bcrypt.compare(userPassword, this.password)
+}
 
 export default mongoose.model('User', userSchema);
