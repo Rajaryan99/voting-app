@@ -1,6 +1,8 @@
 import express from 'express';
 import User from '../models/user.model.js'
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import verifyJWT from '../middlewares/auth.middleware.js'
 
 const routes = express.Router();
 
@@ -32,7 +34,7 @@ routes.post('/signup', async (req, res) => {
     }
 })
 
-routes.post('/login', async (req, res) => {
+routes.post('/login',  async (req, res) => {
 
     try {
 
@@ -54,8 +56,15 @@ routes.post('/login', async (req, res) => {
           return res.status(401).json({message: 'Incorrect aadhar number or password'})
        }
 
+       const token = jwt.sign({id: loginCredientials._id}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRY})
+
        console.log('User logged In');
-       res.status(200).json({message: "User logged In"})
+       res.status(200).json(
+                    {
+                        message: "User logged In",
+                        token
+                    }
+                )
 
 
 
@@ -70,7 +79,7 @@ routes.post('/login', async (req, res) => {
     }
 })
 
-routes.get('/getAllVoters', async (req, res) => {
+routes.get('/getAllVoters', verifyJWT, async (req, res) => {
     try {
 
        const allVoters = await User.find();
@@ -87,7 +96,7 @@ routes.get('/getAllVoters', async (req, res) => {
      }
 })
 
-routes.put('/update/:id', async (req, res) => {
+routes.put('/update/:id', verifyJWT,  async (req, res) => {
     try {
 
         const userId = req.params.id;
@@ -121,7 +130,7 @@ routes.put('/update/:id', async (req, res) => {
     }
 })
 
-routes.delete('/delete/:id', async (req, res) => {
+routes.delete('/delete/:id', verifyJWT, async (req, res) => {
     try {
 
         const userId = req.params.id
