@@ -126,4 +126,54 @@ routes.delete('/:candidateID', verifyJWT, async (req, res) => {
 })
 
 
+// lets start voting
+
+routes.post('/vote/:candidateID', verifyJWT, async (req, res) => {
+    try {
+
+        const candidateID = req.params.candidateID;
+        const userId = req.user.id;
+
+        const candidate = await Candidate.findById(candidateID);
+        if(!candidate){
+            return res.status(404).json({
+                message: "candidate Not Found"
+            })
+        }
+
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({
+                message: "user Not Found"
+            })
+        }
+
+        if(user.isVoted){
+            res.status(400).json({message: 'You have already voted'})
+        }
+
+        if(user.role == 'admin'){
+            res.status(403).json({message: "Admin are not allowed to vote"})
+        }
+
+        candidate.votes.push({user: userId})
+        candidate.voteCount++;
+        await candidate.save();
+
+        //update the user document
+        user.isVoted = true,
+        await user.save()
+
+        res.status(200).json({message:'Voted successfully'})
+        
+    } catch (error) {
+        
+        console.error(error),
+        res.status(500).json(error, {
+                message: "Internal server error while voting"
+        })
+    }
+})
+
+
 export default routes;
