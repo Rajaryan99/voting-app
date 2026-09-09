@@ -175,5 +175,32 @@ routes.post('/vote/:candidateID', verifyJWT, async (req, res) => {
     }
 })
 
+routes.get('/vote/count', async (req, res) => {
+    try {
+
+        //find all the candidate and sorted by decreasing order (vote Count)
+        const candidate = await Candidate.find().sort({voteCount: 'desc'})
+
+        //Map the candidate to only retuen name and votecount
+        const voteRecord = candidate.map((data) => {
+            return {
+                party: data.party,
+                count: data.voteCount
+            }
+        })
+
+        return res.status(200).json({voteRecord})
+        
+    } catch (error) {
+        console.error(error),
+        res.status(500).json(error, {
+                message: "Internal server error while voting"
+        })
+    }
+})
+
+
+
+
 
 export default routes;
